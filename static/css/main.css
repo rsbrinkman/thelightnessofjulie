@@ -1,0 +1,50 @@
+body {
+  color: #464646;
+  text-align: center;
+  margin: 0
+}
+.header {
+  background-color: #fff;
+  border-bottom: 1px solid #121212;
+  text-align: center;
+  font-size: 2em;
+  height: 50px;
+  padding-top: 10px;
+}
+
+.container-flex {
+  display: flex;
+}
+
+.container-margined {
+  margin: 0 auto;
+  max-width: 600px;
+  padding-left: 10px;
+  padding-right: 10px;
+  font-size: 1.3em;
+}
+.tile {
+  width: 100%;
+  border: 1px solid #464646;
+  text-align: center;
+  border-radius: 2px;
+  cursor: pointer;
+}
+.tile:hover {
+  color: #6f6f6f;
+}
+.padding-top {
+  padding-top: 20px;
+}
+.padding-bottom {
+  padding-bottom: 20px;
+}
+.margin-fix {
+  margin-left: -1px;
+}
+.margin-fix-top {
+  margin-top: -1px;
+}
+.welcome {
+  width: 100%;
+}

@@ -1,3 +1,7 @@
+a:-webkit-any-link {
+  text-decoration: none;
+  color: #464646;
+}
 body {
   color: #464646;
   text-align: center;

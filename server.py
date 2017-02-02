@@ -52,7 +52,14 @@ def index():
 
   return render_template('index.html')
 
-def change_lights(state):
+@app.route("/change/<bri>", methods=['GET', 'POST'])
+def slide_change(bri):
+  #change_lights(bri)
+  print bri
+  
+  return render_template('index.html')
+
+def change_lights(state, bri=None):
   b = Bridge('192.168.10.115')
   lights = b.get_light_objects('list')
   for light in lights:
@@ -79,6 +86,9 @@ def change_lights(state):
       light.on = True
       light.brightness = 30
       light.transition_time = TRANSITION
+    if bri:
+      light.on = True
+      light.brightness = bri
 
 
 

@@ -1,18 +1,18 @@
 {% extends '_base.html' %}
 {% block body %}
 <div class="container-flex container-margined padding-top">
-  <span class="welcome">Welcome home Julie, this is your app for managing our lightness.</span>
+  <span class="welcome">Welcome home Julie. This is your app for managing our lightness.</span>
 </div>
 <div class="container-flex container-margined padding-top">
   <div class="tile">
     <a href="?state=dinner">
-      <i class="fa fa-cutlery fa-2x padding-top" aria-hidden="true"></i>
+      <i class="fa fa-cutlery fa-3x padding-top" aria-hidden="true"></i>
       <div class="padding-bottom">Dinner</div>
     </a>
   </div>
   <div class="margin-fix tile">
     <a href="?state=sleep">
-      <i class="fa fa-bed fa-2x padding-top" aria-hidden="true"></i>
+      <i class="fa fa-bed fa-3x padding-top" aria-hidden="true"></i>
       <div class="padding-bottom">Sleep</div>
     </a>  
   </div>
@@ -20,13 +20,13 @@
 <div class="container-flex container-margined margin-fix-top">
   <div class="tile">
     <a href="?state=snuggle">
-      <i class="fa fa-moon-o fa-2x padding-top" aria-hidden="true"></i>
+      <i class="fa fa-moon-o fa-3x padding-top" aria-hidden="true"></i>
       <div class="padding-bottom">Snuggle</div>
     </a>
   </div>
   <div class="margin-fix tile">
     <a href="?state=cook">
-      <i class="fa fa-fire fa-2x padding-top" aria-hidden="true"></i>
+      <i class="fa fa-fire fa-3x padding-top" aria-hidden="true"></i>
       <div class="padding-bottom">Cook</div>
     </a>
   </div>
@@ -34,17 +34,22 @@
 <div class="container-flex container-margined margin-fix-top">
   <div class="tile">
     <a href="?state=movie">
-      <i class="fa fa-film fa-2x padding-top" aria-hidden="true"></i>
+      <i class="fa fa-film fa-3x padding-top" aria-hidden="true"></i>
       <div class="padding-bottom">Movie</div>
     </a>
   </div>
   <div class="margin-fix tile">
     <a href="?state=love">
-      <i class="fa fa-heart fa-2x padding-top" aria-hidden="true"></i>
+      <i class="fa fa-heart fa-3x padding-top" aria-hidden="true"></i>
       <div class="padding-bottom">Love</div>
     </a>
   </div>
 </div>
-
+<div class="container-flex container-margined margin-top">
+  <div class="center">
+    <label for="light">Adjust your lightness</label><br>
+    <input type="range" id="light" min="0" value="10" max="254" step="10">
+  </div>
+</div>
 
 {% endblock %}

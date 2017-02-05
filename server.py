@@ -92,7 +92,7 @@ def change_lights(state, bri=None):
 
 
 
-@app.route("/settings")
+@app.route("/settings", methods=['POST', 'GET'])
 @requires_auth
 def get_ip():
   # Get Bridge IP

@@ -1,6 +1,7 @@
 from flask import Flask, render_template, Response
 from flask import request
 from functools import wraps
+import psycopg2
 import requests
 import json
 from phue import Bridge
@@ -35,7 +36,6 @@ def requires_auth(f):
 @requires_auth
 def index():
   # Get lights
-  ip = request.args.get('ip')
   state = request.args.get('state')
   if state == 'sleep':
     change_lights('sleep')
@@ -59,8 +59,9 @@ def slide_change(bri):
   
   return render_template('index.html')
 
-def change_lights(state, bri=None):
-  b = Bridge('192.168.10.115')
+def change_lights(state, ip, bri=None):
+  b = Bridge(ip)
+  #b = Bridge('192.168.10.115')
   lights = b.get_light_objects('list')
   for light in lights:
     if state == 'dinner':

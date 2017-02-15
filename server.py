@@ -1,10 +1,13 @@
+import db
 from flask import Flask, render_template, Response
 from flask import request
 from functools import wraps
-import psycopg2
-import requests
 import json
 from phue import Bridge
+import logging
+import requests
+
+logging.basicConfig()
 
 USERNAME = 'aREks51uQO6TPSP-T94zMFYDMA0WCuJDXmBWJM7Q'
 TRANSITION = 1000
@@ -54,43 +57,52 @@ def index():
 
 @app.route("/change/<bri>", methods=['GET', 'POST'])
 def slide_change(bri):
-  #change_lights(bri)
-  print bri
-  
+  bri = int(bri)
+  if bri == 0:
+    bri = 'off'
+  change_lights('manual', bri)
+
   return render_template('index.html')
 
-def change_lights(state, ip, bri=None):
-  b = Bridge(ip)
-  #b = Bridge('192.168.10.115')
+def change_lights(state, bri=None):
+  settings = get_settings()
+  b = Bridge(settings['ip'])
   lights = b.get_light_objects('list')
   for light in lights:
     if state == 'dinner':
       light.on = True
-      light.brightness = 100
+      light.brightness = int(settings['dinner'])
       light.transition_time = TRANSITION
     if state == 'sleep':
       light.on = False
-      light. transition_time = TRANSITION
+      light.transition_time = TRANSITION
     if state == 'cook':
       light.on = True
-      light.brightness = 150
+      light.brightness = int(settings['cook'])
       light.transition_time = TRANSITION
     if state == 'snuggle':
       light.on = True
-      light.brightness = 50
+      light.brightness = int(settings['snuggle'])
       light.transition_time = TRANSITION
     if state == 'love':
       light.on = True
-      light.brightness = 20
+      light.brightness = int(settings['love'])
       light.transition_time = TRANSITION
     if state == 'movie':
       light.on = True
-      light.brightness = 30
+      light.brightness = int(settings['movie'])
       light.transition_time = TRANSITION
-    if bri:
-      light.on = True
-      light.brightness = bri
+    if state == 'manual' and bri:
+      if bri == 'off':
+        light.on = False
+      else:
+        light.on = True
+        light.brightness = bri
 
+
+def get_settings():
+
+  return db.read_settings()
 
 
 @app.route("/settings", methods=['POST', 'GET'])
@@ -100,7 +112,8 @@ def get_ip():
   resp = requests.get('https://www.meethue.com/api/nupnp').content
   result = json.loads(resp)
   ip = result[0]['internalipaddress']
+  settings = db.read_settings()
 
-  return render_template('settings.html', ip=ip)
+  return render_template('settings.html', ip=ip, settings=settings)
 if __name__ == "__main__":
-      app.run(host='0.0.0.0')
+      app.run(host='0.0.0.0', debug=True)

@@ -115,5 +115,22 @@ def get_ip():
   settings = db.read_settings()
 
   return render_template('settings.html', ip=ip, settings=settings)
+
+@app.route("/set_ip", methods=['POST', 'GET'])
+@requires_auth
+def set_ip():
+  # Get Bridge IP
+  resp = requests.get('https://www.meethue.com/api/nupnp').content
+  result = json.loads(resp)
+  ip = str(result[0]['internalipaddress'])
+  settings = db.read_settings()
+  updated = False
+  if ip != settings['ip']:
+    print 'here'
+    updated = True
+    db.write_settings('ip', ip)
+  return render_template('set_ip.html', ip=ip, settings=settings['ip'], updated=updated)
+
+
 if __name__ == "__main__":
       app.run(host='0.0.0.0', debug=True)

@@ -24,9 +24,13 @@ def read_settings():
     for row in records:
       return row
 
-def write_settings(updates):
+def write_settings(k, v):
+  settings = read_settings()
+  if k in settings:
+    settings[k] = v
 
   with open('settings.csv', 'wb') as f:
-    w = csv.DictWriter(f, updates.keys())
-    w.writerow(my_dict)
+    w = csv.DictWriter(f, settings.keys())
+    w.writeheader()
+    w.writerow(settings)
 

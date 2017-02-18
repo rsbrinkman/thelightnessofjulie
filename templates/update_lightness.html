@@ -1,0 +1,15 @@
+{% include '_base.html' %}
+<h3>Update our lightness</h3>
+<form action="/update_lightness" method="POST">
+  <label for="dinner">Dinner</label><br>
+  <input type="number" name="dinner" min="1" max="254" value={{settings['dinner']}}><br>
+  <label for="snuggle">Snuggle</label><br>
+  <input type="number" name="snuggle" min="1" max="254" value={{settings['snuggle']}}><br>
+  <label for="love">Love</label><br>
+  <input type="number" name="love" min="1" max="254" value={{settings['love']}}><br>
+  <label for="movie">Movie</label><br>
+  <input type="number" name="movie" min="1" max="254" value={{settings['movie']}}><br>
+  <label for="cook">Cook</label><br>
+  <input type="number" name="cook" min="1" max="254" value={{settings['cook']}}><br>
+  <input type="submit" value="Update Our Lightness">
+</form>

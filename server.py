@@ -65,7 +65,7 @@ def slide_change(bri):
   return render_template('index.html')
 
 def change_lights(state, bri=None):
-  settings = get_settings()
+  settings = db.read_settings()
   b = Bridge(settings['ip'])
   lights = b.get_light_objects('list')
   for light in lights:
@@ -99,20 +99,28 @@ def change_lights(state, bri=None):
         light.on = True
         light.brightness = bri
 
-
-def get_settings():
-
-  return db.read_settings()
-
+@app.route("/update_lightness", methods=['POST', 'GET'])
+@requires_auth
+def get_update_bri():
+  bri = 'hi'
+  data = request.form.to_dict()
+  db.write_settings(data)
+  settings = db.read_settings() 
+  return render_template('update_lightness.html', settings=settings)
 
 @app.route("/settings", methods=['POST', 'GET'])
 @requires_auth
 def get_ip():
   # Get Bridge IP
   resp = requests.get('https://www.meethue.com/api/nupnp').content
-  result = json.loads(resp)
-  ip = result[0]['internalipaddress']
-  settings = db.read_settings()
+  resp = list(resp)
+  try:
+    result = json.loads(resp)
+    ip = result[0]['internalipaddress']
+    settings = db.read_settings()
+  except:
+    settings = 'no bridge' 
+    ip = 'no bridge'
 
   return render_template('settings.html', ip=ip, settings=settings)
 
@@ -121,15 +129,21 @@ def get_ip():
 def set_ip():
   # Get Bridge IP
   resp = requests.get('https://www.meethue.com/api/nupnp').content
-  result = json.loads(resp)
-  ip = str(result[0]['internalipaddress'])
-  settings = db.read_settings()
-  updated = False
-  if ip != settings['ip']:
-    print 'here'
-    updated = True
-    db.write_settings('ip', ip)
-  return render_template('set_ip.html', ip=ip, settings=settings['ip'], updated=updated)
+  resp = list(resp)
+  try:
+    result = json.loads(resp)
+    ip = str(result[0]['internalipaddress'])
+    settings = db.read_settings()
+    settings_ip = settings['ip']
+    updated = False
+    if ip != settings['ip']:
+      updated = True
+      db.write_settings('ip', ip)
+  except:
+    settings_ip = 'no bridge' 
+    ip = 'no bridge'
+    updated = False
+  return render_template('set_ip.html', ip=ip, settings=settings_ip, updated=updated)
 
 
 if __name__ == "__main__":

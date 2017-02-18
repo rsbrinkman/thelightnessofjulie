@@ -24,10 +24,11 @@ def read_settings():
     for row in records:
       return row
 
-def write_settings(k, v):
+def write_settings(updates):
   settings = read_settings()
-  if k in settings:
-    settings[k] = v
+  for k, v in settings.iteritems():
+    if k in updates:
+      settings[k] = updates[k]
 
   with open('settings.csv', 'wb') as f:
     w = csv.DictWriter(f, settings.keys())

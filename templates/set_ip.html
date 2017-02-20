@@ -1,3 +1,5 @@
+{% extends '_base.html' %}
+{% block body %}
 {% if updated == True %}
 <h3>Your IP has been updated!</h3>
 <h6>Old IP was: {{settings}} and new IP is {{ip}}</h6>
@@ -6,3 +8,6 @@
 {% else %}
 <h3>IP doesn't need to be updated!</h3>
 {% endif %}
+
+<input type="button" value="foo" id="test" class="sync">
+{% endblock %}

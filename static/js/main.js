@@ -1,9 +1,10 @@
 var light = document.getElementById("light");
-light.addEventListener("change", function() {
-  var value = light.value;
-  ajax.get('/change/' + value, function() {});
-});
-
+if (light) {
+  light.addEventListener("change", function() {
+    var value = light.value;
+    ajax.get('/change/' + value, function() {});
+  });
+}
 var ajax = {};
 ajax.x = function () {
     if (typeof XMLHttpRequest !== 'undefined') {
@@ -61,4 +62,29 @@ ajax.post = function (url, data, callback, async) {
     }
     ajax.send(url, callback, 'POST', query.join('&'), async)
 };
+var sync = document.getElementById("test");
+console.log(sync)
+var data = '';
+sync.addEventListener("click", function() {
+  var xhr = new XMLHttpRequest();
+  xhr.open('GET', 'https://www.meethue.com/api/nupnp');
+  xhr.send(null);
+
+  xhr.onreadystatechange = function () {
+    var DONE = 4; // readyState 4 means the request is done.
+    var OK = 200; // status 200 is a successful return.
+    if (xhr.readyState === DONE) {
+      if (xhr.status === OK) 
+        console.log(xhr.responseText); // 'This is the returned text.'
+        // Need a callback function here to parse response, then fire it up the server for storage.
+        resp = xhr.responseText;
+        var ip = resp[0]['internalipaddress']
+        if (ip) {
+
+      } else {
+        console.log('Error: ' + xhr.status); // An error occurred during the request.
+      }
+    }
+  });
+
 

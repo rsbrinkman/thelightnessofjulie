@@ -1,13 +1,9 @@
 {% extends '_base.html' %}
 {% block body %}
+<h3>Sync our lightness, be sure to click the bridge first</h3>
+<input type="button" value="Set IP" id="test" class="button">
 {% if updated == True %}
-<h3>Your IP has been updated!</h3>
-<h6>Old IP was: {{settings}} and new IP is {{ip}}</h6>
-{% elif settings == 'no bridge' %}
-  <h3>No bridge found on network :(</h3>
-{% else %}
-<h3>IP doesn't need to be updated!</h3>
+  <h3>Your IP has been updated!</h3>
+  <h6>Old IP was: {{settings}} and new IP is {{ip}}</h6>
 {% endif %}
-
-<input type="button" value="foo" id="test" class="sync">
 {% endblock %}

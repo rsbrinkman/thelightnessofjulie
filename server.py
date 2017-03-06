@@ -102,7 +102,6 @@ def change_lights(state, bri=None):
 @app.route("/update_lightness", methods=['POST', 'GET'])
 @requires_auth
 def get_update_bri():
-  bri = 'hi'
   data = request.form.to_dict()
   db.write_settings(data)
   settings = db.read_settings() 
@@ -124,27 +123,21 @@ def get_ip():
 
   return render_template('settings.html', ip=ip, settings=settings)
 
-@app.route("/set_ip", methods=['POST', 'GET'])
+@app.route("/update_ip/", methods=['POST', 'GET'])
 @requires_auth
-def set_ip():
-  # Get Bridge IP
-  resp = requests.get('https://www.meethue.com/api/nupnp').content
-  resp = list(resp)
-  try:
-    result = json.loads(resp)
-    ip = str(result[0]['internalipaddress'])
-    settings = db.read_settings()
-    settings_ip = settings['ip']
-    updated = False
+def update_ip():
+  settings = db.read_settings()
+  settings_ip = settings['ip']
+  updated = False
+  ip = request.args.get('ip')
+  if ip:
     if ip != settings['ip']:
+      data = {'ip': ip}
+      db.write_settings(data)
       updated = True
-      db.write_settings('ip', ip)
-  except:
-    settings_ip = 'no bridge' 
-    ip = 'no bridge'
-    updated = False
-  return render_template('set_ip.html', ip=ip, settings=settings_ip, updated=updated)
-
+  else:
+    updated = 'no_bridge'
+  return render_template('set_ip.html', ip=ip, updated=updated)
 
 if __name__ == "__main__":
       app.run(host='0.0.0.0', debug=True)

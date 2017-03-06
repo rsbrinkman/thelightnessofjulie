@@ -63,8 +63,6 @@ ajax.post = function (url, data, callback, async) {
     ajax.send(url, callback, 'POST', query.join('&'), async)
 };
 var sync = document.getElementById("test");
-console.log(sync)
-var data = '';
 sync.addEventListener("click", function() {
   var xhr = new XMLHttpRequest();
   xhr.open('GET', 'https://www.meethue.com/api/nupnp');
@@ -78,9 +76,11 @@ sync.addEventListener("click", function() {
         console.log(xhr.responseText); // 'This is the returned text.'
         // Need a callback function here to parse response, then fire it up the server for storage.
         resp = xhr.responseText;
+        resp = [{'internalipaddress': '192.187.8l'}]
         var ip = resp[0]['internalipaddress']
         if (ip) {
-
+          ajax.get('/update_ip/', {'ip': ip}, function() {});
+        }
       } else {
         console.log('Error: ' + xhr.status); // An error occurred during the request.
       }

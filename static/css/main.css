@@ -2,8 +2,13 @@ a:-webkit-any-link {
   text-decoration: none;
   color: #464646;
 }
-input[type=text] {
-  display: block;
+a:-webkit-any-link:hover {
+  color: #6f6f6f;
+}
+label {
+  margin-right: 10px;
+}
+input[type=number] {
   border-radius: 3px;
   height: 15px;
   border: 1px solid lightgray;
@@ -37,7 +42,6 @@ body {
   height: 50px;
   padding-top: 10px;
 }
-
 .container-flex {
   display: flex;
 }
@@ -66,6 +70,9 @@ body {
 .padding-bottom {
   padding-bottom: 20px;
 }
+.padding-right {
+  padding-right: 20px;
+}
 .margin-fix {
   margin-left: -1px;
 }
@@ -92,4 +99,12 @@ body {
 }
 .button:hover {
   background-color: #9c9b9b;
+}
+.footer {
+  margin-top: 40px;
+  padding-top: 15px;
+  border-top: 1px solid #121212;
+}
+.submit {
+  margin-top: 20px;
 }

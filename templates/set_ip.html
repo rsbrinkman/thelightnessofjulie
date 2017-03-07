@@ -2,8 +2,6 @@
 {% block body %}
 <h3>Sync our lightness, be sure to click the bridge first</h3>
 <input type="button" value="Set IP" id="test" class="button">
-{% if updated == True %}
-  <h3>Your IP has been updated!</h3>
-  <h6>Old IP was: {{settings}} and new IP is {{ip}}</h6>
-{% endif %}
+<br>
+<div id="response"></div>
 {% endblock %}

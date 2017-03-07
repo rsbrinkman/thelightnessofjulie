@@ -80,6 +80,13 @@ sync.addEventListener("click", function() {
         var ip = resp[0]['internalipaddress']
         if (ip) {
           ajax.get('/update_ip/', {'ip': ip}, function() {});
+          var response = document.getElementById("response");
+          response.innerHTML += '';
+          response.innerHTML += 'IP is set! ' + ip;
+        } else {
+          var response = document.getElementById("response");
+          response.innerHTML += '';
+          response.innerHTML += 'No IP found, did you click the bridge?';
         }
       } else {
         console.log('Error: ' + xhr.status); // An error occurred during the request.

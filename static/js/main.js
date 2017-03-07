@@ -76,8 +76,8 @@ sync.addEventListener("click", function() {
         console.log(xhr.responseText); // 'This is the returned text.'
         // Need a callback function here to parse response, then fire it up the server for storage.
         resp = xhr.responseText;
-        resp = [{'internalipaddress': '192.187.8l'}]
-        var ip = resp[0]['internalipaddress']
+        json = JSON.parse(resp);
+        var ip = json[0]['internalipaddress']
         if (ip) {
           ajax.get('/update_ip/', {'ip': ip}, function() {});
           var response = document.getElementById("response");

@@ -39,31 +39,9 @@ def requires_auth(f):
 @app.route("/", methods=['GET', 'POST'])
 @requires_auth
 def index():
-  # Get lights
-  state = request.args.get('state')
-  if state == 'sleep':
-    change_lights('sleep')
-  if state == 'snuggle':
-    change_lights('snuggle')
-  if state == 'cook':
-    change_lights('cook')
-  if state == 'dinner':
-    change_lights('dinner')
-  if state == 'movie':
-    change_lights('movie')
-  if state == 'love':
-    change_lights('love')
-
+  
   return render_template('index.html')
 
-@app.route("/change/<bri>", methods=['GET', 'POST'])
-def slide_change(bri):
-  bri = int(bri)
-  if bri == 0:
-    bri = 'off'
-  change_lights('manual', bri)
-
-  return render_template('index.html')
 
 def change_lights(state, bri=None):
   settings = db.read_settings()

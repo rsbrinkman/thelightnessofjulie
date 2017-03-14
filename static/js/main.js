@@ -66,12 +66,9 @@ if (love) {
   });
 }
 var snuggle = document.getElementById("snuggle");
-console.log(snuggle);
 if (snuggle) {
   snuggle.addEventListener("click", function() {
     setLightState('snuggle'); 
-
-    console.log('here');
   });
 }
 var sleep = document.getElementById("sleep");
@@ -92,13 +89,15 @@ if (movie) {
     setLightState('movie'); 
   });
 }
-var light = document.getElementById("light");
-if (light) {
-  light.addEventListener("change", function() {
-    var value = light.value;
-    ajax.get('/change/' + value, '', function() {});
-  });
-}
+document.addEventListener('DOMContentLoaded', function () {
+  var light = document.getElementById("light");
+  if (light) {
+    light.addEventListener("change", function() {
+      var value = light.value;
+      setLightState('custom', value); 
+    });
+  }
+});
 var ajax = {};
 ajax.x = function () {
     if (typeof XMLHttpRequest !== 'undefined') {

@@ -1,8 +1,102 @@
+var user;
+var hue = jsHue();
+hue.discover(
+    function(bridges) {
+        if(bridges.length === 0) {
+            console.log('No bridges found. :(');
+        }
+        else {
+            bridges.forEach(function(b) {
+                console.log('Bridge found at IP address %s.', b.internalipaddress);
+                ajax.get('/update_ip', {'ip':b.internalipaddress}, function(data){}); 
+           
+            });
+        }
+    },
+    function(error) {
+        console.error(error.message);
+    }
+);
+
+function setLightState(state, bri=false) {
+  var settings = ajax.get('/get_settings', '', function(data){
+    var results = JSON.parse(data);
+    var bridge = hue.bridge(results.ip);
+    var user = bridge.user('aREks51uQO6TPSP-T94zMFYDMA0WCuJDXmBWJM7Q');
+ 
+    var lights = user.getLights(function(data) {
+      for (light in data) {
+        if (state == 'dinner') {
+          user.setLightState(light, {bri: Number(results.dinner), on: true});
+        }
+        if (state == 'snuggle') {
+          user.setLightState(light, {bri: Number(results.snuggle), on: true});
+        }
+        if (state == 'movie') {
+          user.setLightState(light, {bri: Number(results.movie), on: true});
+        }
+        if (state == 'sleep') {
+          user.setLightState(light, {on: false});
+        }
+        if (state == 'love') {
+          user.setLightState(light, {bri: Number(results.love), on: true});
+        }
+        if (state == 'cook') {
+          user.setLightState(light, {bri: Number(results.cook), on: true});
+        }
+        if (bri) {
+          user.setLightState(light, {bri: Number(bri), on: true});
+        }
+      } 
+    });
+  });
+  
+}
+
+var dinner = document.getElementById("dinner");
+if (dinner) {
+  dinner.addEventListener("click", function() {
+    setLightState('dinner'); 
+  });
+}
+var love = document.getElementById("love");
+if (love) {
+  love.addEventListener("click", function() {
+    setLightState('love'); 
+  });
+}
+var snuggle = document.getElementById("snuggle");
+console.log(snuggle);
+if (snuggle) {
+  snuggle.addEventListener("click", function() {
+    setLightState('snuggle'); 
+
+    console.log('here');
+  });
+}
+var sleep = document.getElementById("sleep");
+if (sleep) {
+  sleep.addEventListener("click", function() {
+    setLightState('sleep'); 
+  });
+}
+var cook = document.getElementById("cook");
+if (cook) {
+  cook.addEventListener("click", function() {
+    setLightState('cook'); 
+  });
+}
+var movie = document.getElementById("movie");
+if (movie) {
+  movie.addEventListener("click", function() {
+    setLightState('movie'); 
+  });
+}
 var light = document.getElementById("light");
 if (light) {
   light.addEventListener("change", function() {
     var value = light.value;
-    ajax.get('/change/' + value, function() {});
+    ajax.get('/change/' + value, '', function() {});
   });
 }
 var ajax = {};
@@ -62,36 +156,4 @@ ajax.post = function (url, data, callback, async) {
     }
     ajax.send(url, callback, 'POST', query.join('&'), async)
 };
-var sync = document.getElementById("test");
-sync.addEventListener("click", function() {
-  var xhr = new XMLHttpRequest();
-  xhr.open('GET', 'https://www.meethue.com/api/nupnp');
-  xhr.send(null);
-
-  xhr.onreadystatechange = function () {
-    var DONE = 4; // readyState 4 means the request is done.
-    var OK = 200; // status 200 is a successful return.
-    if (xhr.readyState === DONE) {
-      if (xhr.status === OK) 
-        console.log(xhr.responseText); // 'This is the returned text.'
-        // Need a callback function here to parse response, then fire it up the server for storage.
-        resp = xhr.responseText;
-        json = JSON.parse(resp);
-        var ip = json[0]['internalipaddress']
-        if (ip) {
-          ajax.get('/update_ip/', {'ip': ip}, function() {});
-          var response = document.getElementById("response");
-          response.innerHTML += '';
-          response.innerHTML += 'IP is set! ' + ip;
-        } else {
-          var response = document.getElementById("response");
-          response.innerHTML += '';
-          response.innerHTML += 'No IP found, did you click the bridge?';
-        }
-      } else {
-        console.log('Error: ' + xhr.status); // An error occurred during the request.
-      }
-    }
-  });
-
 

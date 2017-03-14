@@ -1,6 +1,7 @@
 import db
-from flask import Flask, render_template, Response
+from flask import Flask, render_template, Response, jsonify
 from flask import request
+
 from functools import wraps
 import json
 from phue import Bridge
@@ -107,6 +108,25 @@ def get_update_bri():
   settings = db.read_settings() 
   return render_template('update_lightness.html', settings=settings)
 
+@app.route("/update_ip", methods=['POST', 'GET'])
+@requires_auth
+def update_ip():
+  settings = db.read_settings()
+  settings_ip = settings['ip']
+  ip = request.args.get('ip')
+  if ip:
+    if ip != settings['ip']:
+      data = {'ip': ip}
+      db.write_settings(data)
+    
+  return 'done'
+
+@app.route("/get_settings")
+@requires_auth
+def get_settings():
+  
+  return jsonify(db.read_settings())
+
 @app.route("/settings", methods=['POST', 'GET'])
 @requires_auth
 def get_ip():
@@ -122,7 +142,7 @@ def get_ip():
     ip = 'no bridge'
 
   return render_template('settings.html', ip=ip, settings=settings)
-
+'''
 @app.route("/update_ip/", methods=['POST', 'GET'])
 @requires_auth
 def update_ip():
@@ -138,6 +158,6 @@ def update_ip():
   else:
     updated = 'no_bridge'
   return render_template('set_ip.html', ip=ip, updated=updated)
-
+'''
 if __name__ == "__main__":
       app.run(host='0.0.0.0', debug=True)

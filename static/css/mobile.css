@@ -1,0 +1,21 @@
+.container-margined {
+}
+input[type=range] {
+  width: 700px;
+}
+input[type=number] {
+  height: 50px;
+  width: 70px;
+  margin-bottom: 20px;
+  font-size: .7em;
+}
+form {
+  font-size: 2em;
+}
+.button {
+  padding: 10px 15px 10px 15px;
+  font-size: .6em;
+}
+.footer {
+  font-size: 1.5em;
+}

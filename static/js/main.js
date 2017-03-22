@@ -4,6 +4,7 @@ hue.discover(
     function(bridges) {
         if(bridges.length === 0) {
             console.log('No bridges found. :(');
+            alert("Whoops, I can't find the bridge. You should probably have Scott take a look at it. ")
         }
         else {
             bridges.forEach(function(b) {
@@ -15,6 +16,7 @@ hue.discover(
     },
     function(error) {
         console.error(error.message);
+        alert("ERROR!!! NOOOO " + error.message)
     }
 );
 

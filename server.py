@@ -120,22 +120,12 @@ def get_ip():
     ip = 'no bridge'
 
   return render_template('settings.html', ip=ip, settings=settings)
-'''
-@app.route("/update_ip/", methods=['POST', 'GET'])
-@requires_auth
-def update_ip():
-  settings = db.read_settings()
-  settings_ip = settings['ip']
-  updated = False
-  ip = request.args.get('ip')
-  if ip:
-    if ip != settings['ip']:
-      data = {'ip': ip}
-      db.write_settings(data)
-      updated = True
-  else:
-    updated = 'no_bridge'
-  return render_template('set_ip.html', ip=ip, updated=updated)
-'''
+
+@app.route("/menu")
+def get_menu():
+
+  return render_template('menu.html')
+
+
 if __name__ == "__main__":
       app.run(host='0.0.0.0', debug=True)

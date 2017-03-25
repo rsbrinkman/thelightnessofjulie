@@ -15,10 +15,14 @@
 </div>
 {% block body %}
 {% endblock %}
+{% block footer %}
 <div class="footer">
   <a href="/update_lightness" class="padding-right">Update Lightness</a>
 </div>
-<script src="/static/js/jshue.js"></script>
-<script src="/static/js/main.js"></script>
+{% endblock %}
+{% block js %}
+  <script src="/static/js/jshue.js"></script>
+  <script src="/static/js/main.js"></script>
+{% endblock %}
 </body>
 </html>

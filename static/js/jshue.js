@@ -3,9 +3,9 @@
  * JavaScript library for Philips Hue.
  *
  * @module jshue
- * @version 0.3.0
+ * @version 2.0.0
  * @author John Peloquin
- * @copyright Copyright (c) 2013 John Peloquin. All rights reserved.
+ * @copyright Copyright 2013 - 2017, John Peloquin and the jsHue contributors.
  */
 
 /**
@@ -13,201 +13,103 @@
  *
  * @class jsHueAPI
  * @constructor
- * @param {Function} XMLHttpRequest XHR dependency
+ * @param {Function} fetch fetch dependency
+ * @param {Function} Response response dependency
  * @param {Object} JSON JSON dependency
+ * @param {Function} Promise promise dependency
  * @return {Object} instance
  */
-var jsHueAPI = function(XMLHttpRequest, JSON) {
+var jsHueAPI = (fetch, Response, JSON, Promise) => {
     /**
-     * Substitutes strings for URLs.
-     *
-     * Example: _sub('http://{host}/bar', { host: 'foo' }) returns 'http://foo/bar'.
-     *
-     * @method _sub
-     * @private
-     * @param {String} str input string
-     * @param {Object} data key/value substitutions
-     * @return {String} output string
-     */
-    var _sub = function(str, data) {
-        return str.replace(/\{(\w+)\}/g, function(t, k) {
-            return data[k] || t;
-        });
-    };
-
-    /**
-     * Concatenates strings for URLs.
-     *
-     * Example: _slash('foo', 'bar') returns 'foo/bar'.
-     *
-     * @method _slash
-     * @private
-     * @param {String} [part]* input strings
-     * @return {String}  output string
-     */
-    var _slash = function() {
-        return Array.prototype.slice.call(arguments, 0).join('/');
-    };
-
-    /**
-     * Performs XHR request.
-     *
-     * The success callback receives the response text, and the failure callback
-     * receives an error object of the following form:
-     *
-     * { type: 'xhr', code: ..., message: ... }
-     *
-     * @method _request
-     * @private
-     * @param {String} method GET, PUT, POST, or DELETE
-     * @param {String} url request URL
-     * @param {String} body request body
-     * @param {Function} success success callback
-     * @param {Function} failure failure callback
-     * @return {Boolean} true if request was sent, false otherwise
-     */
-    var _request = function(method, url, body, success, failure) {
-        var xhr = new XMLHttpRequest();
-        xhr.onreadystatechange = function() {
-            if(xhr.readyState === 4) {
-                if(xhr.status === 200) {
-                    success && success(xhr.responseText);
-                }
-                else {
-                    failure && failure({ type: 'xhr', code: xhr.status, message: xhr.statusText });
-                }
-            }
-        };
-        xhr.open(method, url, true);
-        xhr.send(body);
-        return true;
-    };
-
-    /**
-     * Performs XHR request with JSON.
-     *
-     * The success callback receives an object of parsed response JSON, and the
-     * failure callback receives an error object of the following form:
-     *
-     * { type: 'json', message: ... }
+     * Performs fetch request.
      *
      * @method _requestJson
      * @private
      * @param {String} method GET, PUT, POST, or DELETE
      * @param {String} url request URL
-     * @param {Object} data request data object to serialize for request JSON 
-     * @param {Function} success success callback
-     * @param {Function} failure failure callback
-     * @return {Boolean} true if request was sent, false otherwise
+     * @param {Object} data request data object to serialize for request JSON
+     * @return {Promise} promise resolving to response data object
      */
-    var _requestJson = function(method, url, data, success, failure) {
-        var _success = function(data) {
-            try {
-                data = JSON.parse(data);
-            }
-            catch(e) {
-                failure && failure({ type: 'json', message: e.message });
-                return false;
-            }
-
-            success && success(data);
-        };
-
-        if(data !== null) {
-            try {
+    var _requestJson = (method, url, data) =>
+        (new Promise(resolve => {
+            if(data !== null) {
                 data = JSON.stringify(data);
             }
-            catch(e) {
-                failure && failure({ type: 'json', message: e.message });
-                return false;
-            }
-        }
-
-        return _request(method, url, data, _success, failure);
-    };
+            resolve(data);
+         }))
+         .then(data => fetch(url, {method: method, body: data}))
+         .then(response => response.json());
 
     /**
-     * Performs XHR request with JSON (no body).
+     * Performs fetch request with JSON (no body).
      *
      * @method _requestJsonUrl
      * @private
      * @param {String} method GET, PUT, POST, or DELETE
      * @param {String} url request URL
-     * @param {Function} success success callback
-     * @param {Function} failure failure callback
-     * @return {Boolean} true if request was sent, false otherwise
+     * @return {Promise} promise resolving to response data object
      */
-    var _requestJsonUrl = function(method, url, success, failure) {
-        return _requestJson(method, url, null, success, failure);
-    };
+    var _requestJsonUrl = (method, url) => _requestJson(method, url, null);
 
     /**
-     * Performs XHR GET.
+     * Performs fetch GET.
      *
      * @method _get
      * @private
      * @param {String} url request URL
-     * @param {Function} success success callback
-     * @param {Function} failure failure callback
-     * @return {Boolean} true if request was sent, false otherwise
+     * @return {Promise} promise resolving to response data object
      */
     var _get = _requestJsonUrl.bind(null, 'GET');
 
     /**
-     * Performs XHR PUT.
+     * Performs fetch PUT.
      *
      * @method _put
      * @private
      * @param {String} url request URL
      * @param {Object} data request data object
-     * @param {Function} success success callback
-     * @param {Function} failure failure callback
-     * @return {Boolean} true if request was sent, false otherwise
+     * @return {Promise} promise resolving to response data object
      */
     var _put = _requestJson.bind(null, 'PUT');
 
     /**
-     * Performs XHR POST.
+     * Performs fetch POST.
      *
      * @method _post
      * @private
      * @param {String} url request URL
      * @param {Object} data request data object
-     * @param {Function} success success callback
-     * @param {Function} failure failure callback
-     * @return {Boolean} true if request was sent, false otherwise
+     * @return {Promise} promise resolving to response data object
      */
     var _post = _requestJson.bind(null, 'POST');
 
     /**
-     * Performs XHR DELETE.
+     * Performs fetch DELETE.
      *
      * @method _delete
      * @private
      * @param {String} url request URL
-     * @param {Function} success success callback
-     * @param {Function} failure failure callback
-     * @return {Boolean} true if request was sent, false otherwise
+     * @return {Promise} promise resolving to response data object
      */
     var _delete = _requestJsonUrl.bind(null, 'DELETE');
 
     /**
-     * Creates a parametrized XHR request function.
+     * Creates a parametrized fetch request function.
      *
      * The given request URL generator function should generate a request URL from
      * a single input parameter. For example:
      *
-     * function(id) { return 'http://path/to/resource/' + id; }
+     * (id) => { return `http://path/to/resource/${id}`; }
      *
      * The returned parametrized request function takes this same input parameter
      * plus the remaining parameters of the given request function. For example, a
      * parametrized _get or _delete will have the following signature:
      *
-     * function(id, success, callback)
+     * (id)
      *
      * A parametrized _put or _post will have the following signature:
      *
-     * function(id, data, success, callback)
+     * (id, data)
      *
      * These functions will make appropriate requests to the URLs generated from the
      * first input parameter.
@@ -218,11 +120,24 @@ var jsHueAPI = function(XMLHttpRequest, JSON) {
      * @param {Function} url request URL generator function
      * @return {Function} parametrized request function
      */
-    var _parametrize = function(method, url) {
-        return function(p) {
-            return method.apply(null, [url(p)].concat(Array.prototype.slice.call(arguments, 1)));
-        };
-    };
+    var _parametrize = (method, url) => (p, ...rest) => method(url(p), ...rest);
+
+    /**
+     * Creates an echo.
+     *
+     * The returned function acts as a fetch implementation which just echoes back
+     * the request. This is used for schedule command and rule action generation.
+     *
+     * @method _echo
+     * @private
+     * @param {String} baseUrl base URL to strip out
+     * @return {Function} echo fetch implementation
+     */
+    var _echo = baseUrl => (url, data) => Promise.resolve(new Response(JSON.stringify({
+        address: url.slice(baseUrl.length),
+        method: data.method,
+        body: JSON.parse(data.body)
+    })));
 
     return {
         /* ================================================== */
@@ -233,9 +148,7 @@ var jsHueAPI = function(XMLHttpRequest, JSON) {
          * Discovers local bridges.
          *
          * @method discover
-         * @param {Function} success success callback
-         * @param {Function} failure failure callback
-         * @return {Boolean} true if request was sent, false otherwise
+         * @return {Promise} promise resolving to response data object
          */
         discover: _get.bind(null, 'https://www.meethue.com/api/nupnp'),
         /**
@@ -245,28 +158,22 @@ var jsHueAPI = function(XMLHttpRequest, JSON) {
          * @param {String} ip ip address or hostname of bridge
          * @return {Object} bridge object
          */
-        bridge: function(ip) {
+        bridge: ip => {
             /**
              * @class jsHueBridge
              */
-            var _bridgeUrl = _sub('http://{ip}/api', { ip: ip });
+            var _baseUrl = `http://${ip}`,
+                _bridgeUrl = `${_baseUrl}/api`;
+
             return {
                 /**
                  * Creates new user in bridge whitelist.
                  *
                  * @method createUser
                  * @param {String} type device type
-                 * @param {Function} success success callback
-                 * @param {Function} failure failure callback
-                 * @return {Boolean} true if request was sent, false otherwise
+                 * @return {Promise} promise resolving to response data object
                  */
-                createUser: function(type, success, failure) {
-                    var data = {
-                        devicetype: type
-                    };
-                    return _post(_bridgeUrl, data, success, failure);
-                },
-
+                createUser: type => _post(_bridgeUrl, { devicetype: type }),
                 /**
                  * Creates user object (jsHueUser).
                  *
@@ -274,87 +181,61 @@ var jsHueAPI = function(XMLHttpRequest, JSON) {
                  * @param {String} username username
                  * @return {Object} user object
                  */
-                user: function(username) {
+                user: username => {
                     /**
                      * @class jsHueUser
                      */
-                    var _userUrl = _slash(_bridgeUrl, username),
-                        _infoUrl = _slash(_userUrl, 'info'),
-                        _configUrl = _slash(_userUrl, 'config'),
-                        _lightsUrl = _slash(_userUrl, 'lights'),
-                        _groupsUrl = _slash(_userUrl, 'groups'),
-                        _schedulesUrl = _slash(_userUrl, 'schedules'),
-                        _scenesUrl = _slash(_userUrl, 'scenes'),
-                        _sensorsUrl = _slash(_userUrl, 'sensors'),
-                        _rulesUrl = _slash(_userUrl, 'rules');
+                    var _userUrl = `${_bridgeUrl}/${username}`,
+                        _capabilitiesUrl = `${_userUrl}/capabilities`,
+                        _configUrl = `${_userUrl}/config`,
+                        _lightsUrl = `${_userUrl}/lights`,
+                        _groupsUrl = `${_userUrl}/groups`,
+                        _schedulesUrl = `${_userUrl}/schedules`,
+                        _scenesUrl = `${_userUrl}/scenes`,
+                        _sensorsUrl = `${_userUrl}/sensors`,
+                        _rulesUrl = `${_userUrl}/rules`,
+                        _linksUrl = `${_userUrl}/resourcelinks`;
 
-                    var _objectUrl = function(baseUrl) {
-                        return function(id) {
-                            return _slash(baseUrl, id);
-                        };
-                    };
+                    var _objectUrl = baseUrl => id => `${baseUrl}/${id}`;
 
                     var _lightUrl = _objectUrl(_lightsUrl),
                         _groupUrl = _objectUrl(_groupsUrl),
                         _scheduleUrl = _objectUrl(_schedulesUrl),
                         _sceneUrl = _objectUrl(_scenesUrl),
                         _sensorUrl = _objectUrl(_sensorsUrl),
-                        _ruleUrl = _objectUrl(_rulesUrl);
+                        _ruleUrl = _objectUrl(_rulesUrl),
+                        _linkUrl = _objectUrl(_linksUrl);
 
                     return {
                         /* ================================================== */
-                        /* Info API                                           */
+                        /* Capabilities API                                   */
                         /* ================================================== */
 
                         /**
-                         * Gets bridge timezones.
+                         * Gets bridge capabilities.
                          *
-                         * @method getTimezones
-                         * @param {Function} success success callback
-                         * @param {Function} failure failure callback
-                         * @return {Boolean} true if request was sent, false otherwise
+                         * @method getCapabilities
+                         * @return {Promise} promise resolving to response data object
                          */
-                        getTimezones: _get.bind(null, _slash(_infoUrl, 'timezones')),
+                        getCapabilities: _get.bind(null, _capabilitiesUrl),
 
                         /* ================================================== */
                         /* Configuration API                                  */
                         /* ================================================== */
 
                         /**
-                         * Creates current user in bridge whitelist.
-                         *
-                         * @method create
-                         * @param {String} type device type
-                         * @param {Function} success success callback
-                         * @param {Function} failure failure callback
-                         * @return {Boolean} true if request was sent, false otherwise
-                         */
-                        create: function(type, success, failure) {
-                            var data = {
-                                username: username,
-                                devicetype: type
-                            };
-                            return _post(_bridgeUrl, data, success, failure);
-                        },
-                        /**
                          * Deletes user from bridge whitelist.
                          *
                          * @method deleteUser
                          * @param {String} username username
-                         * @param {Function} success success callback
-                         * @param {Function} failure failure callback
-                         * @return {Boolean} true if request was sent, false otherwise
+                         * @return {Promise} promise resolving to response data object
                          */
-                        deleteUser: _parametrize(_delete, function(username) {
-                            return _slash(_configUrl, 'whitelist', username);
-                        }),
+                        deleteUser: _parametrize(_delete, username => `${_configUrl}/whitelist/${username}`),
                         /**
                          * Gets bridge configuration.
                          *
                          * @method getConfig
-                         * @param {Function} success success callback
-                         * @param {Function} failure failure callback
-                         * @return {Boolean} true if request was sent, false otherwise
+                         * @return {Promise} promise resolving to response data object
                          */
                         getConfig: _get.bind(null, _configUrl),
                         /**
@@ -362,18 +243,14 @@ var jsHueAPI = function(XMLHttpRequest, JSON) {
                          *
                          * @method setConfig
                          * @param {Object} data config data
-                         * @param {Function} success success callback
-                         * @param {Function} failure failure callback
-                         * @return {Boolean} true if request was sent, false otherwise
+                         * @return {Promise} promise resolving to response data object
                          */
                         setConfig: _put.bind(null, _configUrl),
                         /**
                          * Gets bridge full state.
                          *
                          * @method getFullState
-                         * @param {Function} success success callback
-                         * @param {Function} failure failure callback
-                         * @return {Boolean} true if request was sent, false otherwise
+                         * @return {Promise} promise resolving to response data object
                          */
                         getFullState: _get.bind(null, _userUrl),
 
@@ -385,37 +262,30 @@ var jsHueAPI = function(XMLHttpRequest, JSON) {
                          * Gets lights.
                          *
                          * @method getLights
-                         * @param {Function} success success callback
-                         * @param {Function} failure failure callback
-                         * @return {Boolean} true if request was sent, false otherwise
+                         * @return {Promise} promise resolving to response data object
                          */
                         getLights: _get.bind(null, _lightsUrl),
                         /**
                          * Gets new lights.
                          *
                          * @method getNewLights
-                         * @param {Function} success success callback
-                         * @param {Function} failure failure callback
-                         * @return {Boolean} true if request was sent, false otherwise
+                         * @return {Promise} promise resolving to response data object
                          */
-                        getNewLights: _get.bind(null, _slash(_lightsUrl, 'new')),
+                        getNewLights: _get.bind(null, `${_lightsUrl}/new`),
                         /**
                          * Searches for new lights.
                          *
                          * @method searchForNewLights
-                         * @param {Function} success success callback
-                         * @param {Function} failure failure callback
-                         * @return {Boolean} true if request was sent, false otherwise
+                         * @param {Object} data data (optional)
+                         * @return {Promise} promise resolving to response data object
                          */
-                        searchForNewLights: _post.bind(null, _lightsUrl, null),
+                        searchForNewLights: (data = null) => _post(_lightsUrl, data),
                         /**
                          * Gets light attributes and state.
                          *
                          * @method getLight
                          * @param {Number} id light ID
-                         * @param {Function} success success callback
-                         * @param {Function} failure failure callback
-                         * @return {Boolean} true if request was sent, false otherwise
+                         * @return {Promise} promise resolving to response data object
                          */
                         getLight: _parametrize(_get, _lightUrl),
                         /**
@@ -423,10 +293,8 @@ var jsHueAPI = function(XMLHttpRequest, JSON) {
                          *
                          * @method setLight
                          * @param {Number} id light ID
-                         * @param {Object} data attribute data 
-                         * @param {Function} success success callback
-                         * @param {Function} failure failure callback
-                         * @return {Boolean} true if request was sent, false otherwise
+                         * @param {Object} data attribute data
+                         * @return {Promise} promise resolving to response data object
                          */
                         setLight: _parametrize(_put, _lightUrl),
                         /**
@@ -435,13 +303,17 @@ var jsHueAPI = function(XMLHttpRequest, JSON) {
                          * @method setLightState
                          * @param {Number} id light ID
                          * @param {Object} data state data
-                         * @param {Function} success success callback
-                         * @param {Function} failure failure callback
-                         * @return {Boolean} true if request was sent, false otherwise
+                         * @return {Promise} promise resolving to response data object
                          */
-                        setLightState: _parametrize(_put, function(id) {
-                            return _slash(_lightUrl(id), 'state');
-                        }),
+                        setLightState: _parametrize(_put, id => `${_lightUrl(id)}/state`),
+                        /**
+                         * Deletes a light.
+                         *
+                         * @method deleteLight
+                         * @param {Number} id light ID
+                         * @return {Promise} promise resolving to response data object
+                         */
+                        deleteLight: _parametrize(_delete, _lightUrl),
 
                         /* ================================================== */
                         /* Groups API                                         */
@@ -451,9 +323,7 @@ var jsHueAPI = function(XMLHttpRequest, JSON) {
                          * Gets groups.
                          *
                          * @method getGroups
-                         * @param {Function} success success callback
-                         * @param {Function} failure failure callback
-                         * @return {Boolean} true if request was sent, false otherwise
+                         * @return {Promise} promise resolving to response data object
                          */
                         getGroups: _get.bind(null, _groupsUrl),
                         /**
@@ -461,9 +331,7 @@ var jsHueAPI = function(XMLHttpRequest, JSON) {
                          *
                          * @method createGroup
                          * @param {Object} data group data
-                         * @param {Function} success success callback
-                         * @param {Function} failure failure callback
-                         * @return {Boolean} true if request was sent, false otherwise
+                         * @return {Promise} promise resolving to response data object
                          */
                         createGroup: _post.bind(null, _groupsUrl),
                         /**
@@ -471,9 +339,7 @@ var jsHueAPI = function(XMLHttpRequest, JSON) {
                          *
                          * @method getGroup
                          * @param {Number} id group ID
-                         * @param {Function} success success callback
-                         * @param {Function} failure failure callback
-                         * @return {Boolean} true if request was sent, false otherwise
+                         * @return {Promise} promise resolving to response data object
                          */
                         getGroup: _parametrize(_get, _groupUrl),
                         /**
@@ -482,9 +348,7 @@ var jsHueAPI = function(XMLHttpRequest, JSON) {
                          * @method setGroup
                          * @param {Number} id group ID
                          * @param {Object} data attribute data
-                         * @param {Function} success success callback
-                         * @param {Function} failure failure callback
-                         * @return {Boolean} true if request was sent, false otherwise
+                         * @return {Promise} promise resolving to response data object
                          */
                         setGroup: _parametrize(_put, _groupUrl),
                         /**
@@ -493,21 +357,15 @@ var jsHueAPI = function(XMLHttpRequest, JSON) {
                          * @method setGroupState
                          * @param {Number} id group ID
                          * @param {Object} data state data
-                         * @param {Function} success success callback
-                         * @param {Function} failure failure callback
-                         * @return {Boolean} true if request was sent, false otherwise
+                         * @return {Promise} promise resolving to response data object
                          */
-                        setGroupState: _parametrize(_put, function(id) {
-                            return _slash(_groupUrl(id), 'action');
-                        }),
+                        setGroupState: _parametrize(_put, id => `${_groupUrl(id)}/action`),
                         /**
                          * Deletes a group.
                          *
                          * @method deleteGroup
                          * @param {Number} id group ID
-                         * @param {Function} success success callback
-                         * @param {Function} failure failure callback
-                         * @return {Boolean} true if request was sent, false otherwise
+                         * @return {Promise} promise resolving to response data object
                          */
                         deleteGroup: _parametrize(_delete, _groupUrl),
 
@@ -519,9 +377,7 @@ var jsHueAPI = function(XMLHttpRequest, JSON) {
                          * Gets schedules.
                          *
                          * @method getSchedules
-                         * @param {Function} success success callback
-                         * @param {Function} failure failure callback
-                         * @return {Boolean} true if request was sent, false otherwise
+                         * @return {Promise} promise resolving to response data object
                          */
                         getSchedules: _get.bind(null, _schedulesUrl),
                         /**
@@ -529,9 +385,7 @@ var jsHueAPI = function(XMLHttpRequest, JSON) {
                          *
                          * @method createSchedule
                          * @param {Object} data schedule data
-                         * @param {Function} success success callback
-                         * @param {Function} failure failure callback
-                         * @return {Boolean} true if request was sent, false otherwise
+                         * @return {Promise} promise resolving to response data object
                          */
                         createSchedule: _post.bind(null, _schedulesUrl),
                         /**
@@ -539,9 +393,7 @@ var jsHueAPI = function(XMLHttpRequest, JSON) {
                          *
                          * @method getSchedule
                          * @param {Number} id schedule ID
-                         * @param {Function} success success callback
-                         * @param {Function} failure failure callback
-                         * @return {Boolean} true if request was sent, false otherwise
+                         * @return {Promise} promise resolving to response data object
                          */
                         getSchedule: _parametrize(_get, _scheduleUrl),
                         /**
@@ -550,9 +402,7 @@ var jsHueAPI = function(XMLHttpRequest, JSON) {
                          * @method setSchedule
                          * @param {Number} id schedule ID
                          * @param {Object} data schedule data
-                         * @param {Function} success success callback
-                         * @param {Function} failure failure callback
-                         * @return {Boolean} true if request was sent, false otherwise
+                         * @return {Promise} promise resolving to response data object
                          */
                         setSchedule: _parametrize(_put, _scheduleUrl),
                         /**
@@ -560,11 +410,18 @@ var jsHueAPI = function(XMLHttpRequest, JSON) {
                          *
                          * @method deleteSchedule
                          * @param {Number} id schedule ID
-                         * @param {Function} success success callback
-                         * @param {Function} failure failure callback
-                         * @return {Boolean} true if request was sent, false otherwise
+                         * @return {Promise} promise resolving to response data object
                          */
                         deleteSchedule: _parametrize(_delete, _scheduleUrl),
+                        /**
+                         * Creates schedule command generator object.
+                         *
+                         * @experimental
+                         * @method scheduleCommandGenerator
+                         * @return {Object} schedule command generator
+                         */
+                        scheduleCommandGenerator: () =>
+                            jsHueAPI(_echo(_baseUrl), Response, JSON, Promise).bridge(ip).user(username),
 
                         /* ================================================== */
                         /* Scenes API                                         */
@@ -574,36 +431,53 @@ var jsHueAPI = function(XMLHttpRequest, JSON) {
                          * Gets scenes.
                          *
                          * @method getScenes
-                         * @param {Function} success success callback
-                         * @param {Function} failure failure callback
-                         * @return {Boolean} true if request was sent, false otherwise
+                         * @return {Promise} promise resolving to response data object
                          */
                         getScenes: _get.bind(null, _scenesUrl),
                         /**
-                         * Creates or updates a scene.
+                         * Creates a scene.
+                         *
+                         * @method createScene
+                         * @param {Object} data scene data
+                         * @return {Promise} promise resolving to response data object
+                         */
+                        createScene: _post.bind(null, _scenesUrl),
+                        /**
+                         * Gets scene attributes.
+                         *
+                         * @method getScene
+                         * @param {String} id scene ID
+                         * @return {Promise} promise resolving to response data object
+                         */
+                        getScene: _parametrize(_get, _sceneUrl),
+                        /**
+                         * Sets scene attributes.
                          *
                          * @method setScene
                          * @param {String} id scene ID
                          * @param {Object} data scene data
-                         * @param {Function} success success callback
-                         * @param {Function} failure failure callback
-                         * @return {Boolean} true if request was sent, false otherwise
+                         * @return {Promise} promise resolving to response data object
                          */
                         setScene: _parametrize(_put, _sceneUrl),
                         /**
-                         * Modifies the state of a light in a scene.
+                         * Sets the state of a light in a scene.
                          *
                          * @method setSceneLightState
                          * @param {String} sceneId scene ID
                          * @param {Number} lightId light ID
                          * @param {Object} data scene light state data
-                         * @param {Function} success success callback
-                         * @param {Function} failure failure callback
-                         * @return {Boolean} true if request was sent, false otherwise
+                         * @return {Promise} promise resolving to response data object
                          */
-                        setSceneLightState: function(sceneId, lightId, data, success, callback) {
-                            return _put(_slash(_sceneUrl(sceneId), 'lights', lightId, 'state'), data, success, callback);
-                        },
+                        setSceneLightState: (sceneId, lightId, data) =>
+                            _put(`${_sceneUrl(sceneId)}/lightstates/${lightId}`, data),
+                        /**
+                         * Deletes a scene.
+                         *
+                         * @method deleteScene
+                         * @param {String} id scene ID
+                         * @return {Promise} promise resolving to response data object
+                         */
+                        deleteScene: _parametrize(_delete, _sceneUrl),
 
                         /* ================================================== */
                         /* Sensors API                                        */
@@ -613,9 +487,7 @@ var jsHueAPI = function(XMLHttpRequest, JSON) {
                          * Gets sensors.
                          *
                          * @method getSensors
-                         * @param {Function} success success callback
-                         * @param {Function} failure failure callback
-                         * @return {Boolean} true if request was sent, false otherwise
+                         * @return {Promise} promise resolving to response data object
                          */
                         getSensors: _get.bind(null, _sensorsUrl),
                         /**
@@ -623,37 +495,29 @@ var jsHueAPI = function(XMLHttpRequest, JSON) {
                          *
                          * @method createSensor
                          * @param {Object} data sensor data
-                         * @param {Function} success success callback
-                         * @param {Function} failure failure callback
-                         * @return {Boolean} true if request was sent, false otherwise
+                         * @return {Promise} promise resolving to response data object
                          */
                         createSensor: _post.bind(null, _sensorsUrl),
                         /**
                          * Searches for new sensors.
                          *
                          * @method searchForNewSensors
-                         * @param {Function} success success callback
-                         * @param {Function} failure failure callback
-                         * @return {Boolean} true if request was sent, false otherwise
+                         * @return {Promise} promise resolving to response data object
                          */
                         searchForNewSensors: _post.bind(null, _sensorsUrl, null),
                         /**
                          * Gets new sensors since last search.
                          *
                          * @method getNewSensors
-                         * @param {Function} success success callback
-                         * @param {Function} failure failure callback
-                         * @return {Boolean} true if request was sent, false otherwise
+                         * @return {Promise} promise resolving to response data object
                          */
-                        getNewSensors: _get.bind(null, _slash(_sensorsUrl, 'new')),
+                        getNewSensors: _get.bind(null, `${_sensorsUrl}/new`),
                         /**
                          * Gets sensor attributes and state.
                          *
                          * @method getSensor
                          * @param {Number} id sensor ID
-                         * @param {Function} success success callback
-                         * @param {Function} failure failure callback
-                         * @return {Boolean} true if request was sent, false otherwise
+                         * @return {Promise} promise resolving to response data object
                          */
                         getSensor: _parametrize(_get, _sensorUrl),
                         /**
@@ -662,9 +526,7 @@ var jsHueAPI = function(XMLHttpRequest, JSON) {
                          * @method setSensor
                          * @param {Number} id sensor ID
                          * @param {Object} data attribute data
-                         * @param {Function} success success callback
-                         * @param {Function} failure failure callback
-                         * @return {Boolean} true if request was sent, false otherwise
+                         * @return {Promise} promise resolving to response data object
                          */
                         setSensor: _parametrize(_put, _sensorUrl),
                         /**
@@ -673,26 +535,18 @@ var jsHueAPI = function(XMLHttpRequest, JSON) {
                          * @method setSensorConfig
                          * @param {Number} id sensor ID
                          * @param {Object} data config data
-                         * @param {Function} success success callback
-                         * @param {Function} failure failure callback
-                         * @return {Boolean} true if request was sent, false otherwise
+                         * @return {Promise} promise resolving to response data object
                          */
-                        setSensorConfig: _parametrize(_put, function(id) {
-                            return _slash(_sensorUrl(id), 'config');
-                        }),
+                        setSensorConfig: _parametrize(_put, id => `${_sensorUrl(id)}/config`),
                         /**
                          * Sets sensor state.
                          *
                          * @method setSensorState
                          * @param {Number} id sensor ID
                          * @param {Object} data state data
-                         * @param {Function} success success callback
-                         * @param {Function} failure failure callback
-                         * @return {Boolean} true if request was sent, false otherwise
+                         * @return {Promise} promise resolving to response data object
                          */
-                        setSensorState: _parametrize(_put, function(id) {
-                            return _slash(_sensorUrl(id), 'state');
-                        }),
+                        setSensorState: _parametrize(_put, id => `${_sensorUrl(id)}/state`),
                         /**
                          * Deletes a sensor.
                          *
@@ -700,9 +554,7 @@ var jsHueAPI = function(XMLHttpRequest, JSON) {
                          *
                          * @method deleteSensor
                          * @param {Number} id sensor ID
-                         * @param {Function} success success callback
-                         * @param {Function} failure failure callback
-                         * @return {Boolean} true if request was sent, false otherwise
+                         * @return {Promise} promise resolving to response data object
                          */
                         deleteSensor: _parametrize(_delete, _sensorUrl),
 
@@ -714,9 +566,7 @@ var jsHueAPI = function(XMLHttpRequest, JSON) {
                          * Gets rules.
                          *
                          * @method getRules
-                         * @param {Function} success success callback
-                         * @param {Function} failure failure callback
-                         * @return {Boolean} true if request was sent, false otherwise
+                         * @return {Promise} promise resolving to response data object
                          */
                         getRules: _get.bind(null, _rulesUrl),
                         /**
@@ -724,9 +574,7 @@ var jsHueAPI = function(XMLHttpRequest, JSON) {
                          *
                          * @method createRule
                          * @param {Object} data rule data
-                         * @param {Function} success success callback
-                         * @param {Function} failure failure callback
-                         * @return {Boolean} true if request was sent, false otherwise
+                         * @return {Promise} promise resolving to response data object
                          */
                         createRule: _post.bind(null, _rulesUrl),
                         /**
@@ -734,9 +582,7 @@ var jsHueAPI = function(XMLHttpRequest, JSON) {
                          *
                          * @method getRule
                          * @param {Number} id rule ID
-                         * @param {Function} success success callback
-                         * @param {Function} failure failure callback
-                         * @return {Boolean} true if request was sent, false otherwise
+                         * @return {Promise} promise resolving to response data object
                          */
                         getRule: _parametrize(_get, _ruleUrl),
                         /**
@@ -745,9 +591,7 @@ var jsHueAPI = function(XMLHttpRequest, JSON) {
                          * @method setRule
                          * @param {Number} id rule ID
                          * @param {Object} data rule data
-                         * @param {Function} success success callback
-                         * @param {Function} failure failure callback
-                         * @return {Boolean} true if request was sent, false otherwise
+                         * @return {Promise} promise resolving to response data object
                          */
                         setRule: _parametrize(_put, _ruleUrl),
                         /**
@@ -755,11 +599,63 @@ var jsHueAPI = function(XMLHttpRequest, JSON) {
                          *
                          * @method deleteRule
                          * @param {Number} id rule ID
-                         * @param {Function} success success callback
-                         * @param {Function} failure failure callback
-                         * @return {Boolean} true if request was sent, false otherwise
+                         * @return {Promise} promise resolving to response data object
                          */
-                        deleteRule: _parametrize(_delete, _ruleUrl)
+                        deleteRule: _parametrize(_delete, _ruleUrl),
+                        /**
+                         * Creates rule action generator object.
+                         *
+                         * @experimental
+                         * @method ruleActionGenerator
+                         * @return {Object} rule action generator object
+                         */
+                        ruleActionGenerator: () =>
+                            jsHueAPI(_echo(_userUrl), Response, JSON, Promise).bridge(ip).user(username),
+
+                        /* ================================================== */
+                        /* Resourcelinks API                                  */
+                        /* ================================================== */
+
+                        /**
+                         * Gets all resourcelinks.
+                         *
+                         * @method getResourceLinks
+                         * @return {Promise} promise resolving to response data object
+                         */
+                        getResourceLinks: _get.bind(null, _linksUrl),
+                        /**
+                         * Creates a resourcelink.
+                         *
+                         * @method createResourceLink
+                         * @param {Object} data resourcelink data
+                         * @return {Promise} promise resolving to response data object
+                         */
+                        createResourceLink: _post.bind(null, _linksUrl),
+                        /**
+                         * Gets resourcelink attributes.
+                         *
+                         * @method getResourceLink
+                         * @param {Number} id resourcelink ID
+                         * @return {Promise} promise resolving to response data object
+                         */
+                        getResourceLink: _parametrize(_get, _linkUrl),
+                        /**
+                         * Sets resourcelink attributes.
+                         *
+                         * @method setResourceLink
+                         * @param {Number} id resourcelink ID
+                         * @param {Object} data resourcelink data
+                         * @return {Promise} promise resolving to response data object
+                         */
+                        setResourceLink: _parametrize(_put, _linkUrl),
+                        /**
+                         * Deletes a resourcelink.
+                         *
+                         * @method deleteResourceLink
+                         * @param {Number} id resourcelink ID
+                         * @return {Promise} promise resolving to response data object
+                         */
+                        deleteResourceLink: _parametrize(_delete, _linkUrl)
                     };
                 }
             };
@@ -767,14 +663,15 @@ var jsHueAPI = function(XMLHttpRequest, JSON) {
     };
 };
 
-if(typeof XMLHttpRequest !== 'undefined' && typeof JSON !== 'undefined') {
+if(typeof fetch !== 'undefined' && typeof Response !== 'undefined'
+    && typeof JSON !== 'undefined' && typeof Promise !== 'undefined') {
     /**
      * jsHue class.
-     * 
-     * @class jsHue 
+     *
+     * @class jsHue
      * @extends jsHueAPI
-     * @constructor 
-     * @return {Object} instance 
+     * @constructor
+     * @return {Object} instance
      */
-    var jsHue = jsHueAPI.bind(null, XMLHttpRequest, JSON);
+    var jsHue = jsHueAPI.bind(null, fetch, Response, JSON, Promise);
 }

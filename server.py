@@ -14,6 +14,7 @@ USERNAME = 'aREks51uQO6TPSP-T94zMFYDMA0WCuJDXmBWJM7Q'
 TRANSITION = 1000
 app = Flask(__name__)
 
+
 def check_auth(username, password):
     """This function is called to check if a username /
     password combination is valid.

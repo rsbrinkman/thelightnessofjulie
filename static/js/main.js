@@ -10,7 +10,6 @@ hue.discover(
             bridges.forEach(function(b) {
                 console.log('Bridge found at IP address %s.', b.internalipaddress);
                 ajax.get('/update_ip', {'ip':b.internalipaddress}, function(data){}); 
-           
             });
         }
     },
@@ -24,9 +23,18 @@ function setLightState(state, bri=false) {
   var settings = ajax.get('/get_settings', '', function(data){
     var results = JSON.parse(data);
     var bridge = hue.bridge(results.ip);
-    var user = bridge.user('aREks51uQO6TPSP-T94zMFYDMA0WCuJDXmBWJM7Q');
- 
-    var lights = user.getLights(function(data) {
+    var user = bridge.user('Na0sOGLXFKVzvct-OdsEk-cRk7KxtBalpgcHn0q4');
+    /*bridge.createUser('myApp#testdevice').then(data => {
+     extract bridge-generated username from returned data
+    var username = data[0].success.username;
+
+    console.log('New username:', username);
+
+    // instantiate user object with username
+    var user = bridge.user(username);
+    });
+    */
+    var lights = user.getLights().then(data => {
       for (light in data) {
         if (state == 'dinner') {
           user.setLightState(light, {bri: Number(results.dinner), on: true});
@@ -38,6 +46,7 @@ function setLightState(state, bri=false) {
           user.setLightState(light, {bri: Number(results.movie), on: true});
         }
         if (state == 'sleep') {
+          console.log('sleep');
           user.setLightState(light, {on: false});
         }
         if (state == 'love') {

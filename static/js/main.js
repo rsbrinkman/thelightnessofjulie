@@ -19,7 +19,7 @@ hue.discover(
     }
 );
 
-function setLightState(state, bri=false) {
+function setLightState(state, bri) {
   var settings = ajax.get('/get_settings', '', function(data){
     var results = JSON.parse(data);
     var bridge = hue.bridge(results.ip);
@@ -166,4 +166,3 @@ ajax.post = function (url, data, callback, async) {
     }
     ajax.send(url, callback, 'POST', query.join('&'), async)
 };
-

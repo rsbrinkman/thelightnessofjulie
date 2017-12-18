@@ -22,7 +22,7 @@ input[type=range] {
    border-radius: 3px;
    border: 1px solid #464646;
 }
-::-webkit-slider-thumb {
+input[type=range]::-webkit-slider-thumb {
   -webkit-appearance: none;
   background-color: #666;
   width: 20px;
@@ -71,6 +71,9 @@ body {
 .padding-bottom {
   padding-bottom: 20px;
 }
+.padding-bottom-large {
+  padding-bottom: 120px;
+}
 .padding-right {
   padding-right: 20px;
 }
@@ -79,6 +82,9 @@ body {
 }
 .margin-fix-top {
   margin-top: -1px;
+}
+.margin-right {
+  margin-right: 10px;
 }
 .margin-top {
   margin-top: 40px;
@@ -111,4 +117,46 @@ body {
 }
 #response {
   margin-top: 20px;
+}
+.vacation {
+  font-size: 1.3em;
+}
+
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% {
+    -moz-transform: translateY(0);
+    -ms-transform: translateY(0);
+    -webkit-transform: translateY(0);
+    transform: translateY(0);
+  }
+  40% {
+    -moz-transform: translateY(-30px);
+    -ms-transform: translateY(-30px);
+    -webkit-transform: translateY(-30px);
+    transform: translateY(-30px);
+  }
+  60% {
+    -moz-transform: translateY(-15px);
+    -ms-transform: translateY(-15px);
+    -webkit-transform: translateY(-15px);
+    transform: translateY(-15px);
+  }
+}
+@-webkit-keyframes bounce {
+  0%, 20%, 50%, 80%, 100% {
+    -webkit-transform: translateY(0);
+    transform: translateY(0);
+  }
+  40% {
+    -webkit-transform: translateY(-30px);
+    transform: translateY(-30px);
+  }
+  60% {
+    -webkit-transform: translateY(-15px);
+    transform: translateY(-15px);
+  }
+}
+.bounce {
+  animation: bounce 2s infinite;
+  -webkit-animation: bounce 2s infinite;
 }

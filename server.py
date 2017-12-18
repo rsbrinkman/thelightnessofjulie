@@ -40,7 +40,7 @@ def requires_auth(f):
 @app.route("/", methods=['GET', 'POST'])
 @requires_auth
 def index():
-  
+
   return render_template('index.html')
 
 
@@ -84,7 +84,7 @@ def change_lights(state, bri=None):
 def get_update_bri():
   data = request.form.to_dict()
   db.write_settings(data)
-  settings = db.read_settings() 
+  settings = db.read_settings()
   return render_template('update_lightness.html', settings=settings)
 
 @app.route("/update_ip", methods=['POST', 'GET'])
@@ -97,13 +97,13 @@ def update_ip():
     if ip != settings['ip']:
       data = {'ip': ip}
       db.write_settings(data)
-    
+
   return 'done'
 
 @app.route("/get_settings")
 @requires_auth
 def get_settings():
-  
+
   return jsonify(db.read_settings())
 
 @app.route("/settings", methods=['POST', 'GET'])
@@ -117,7 +117,7 @@ def get_ip():
     ip = result[0]['internalipaddress']
     settings = db.read_settings()
   except:
-    settings = 'no bridge' 
+    settings = 'no bridge'
     ip = 'no bridge'
 
   return render_template('settings.html', ip=ip, settings=settings)
@@ -126,6 +126,12 @@ def get_ip():
 def get_menu():
 
   return render_template('menu.html')
+
+@app.route("/vacation")
+def get_vacation():
+
+  return render_template('vacation.html')
+
 
 
 if __name__ == "__main__":

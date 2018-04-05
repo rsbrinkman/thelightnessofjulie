@@ -132,6 +132,11 @@ def get_vacation():
 
   return render_template('vacation.html')
 
+@app.route("/birthday_2018")
+def get_birthday_2018():
+
+  return render_template('bday_2018.html')
+
 
 
 if __name__ == "__main__":
